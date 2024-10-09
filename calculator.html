@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Higher-IT Institute</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #282c34;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: rgb(255, 255, 255);
+            flex-direction: column;
+        }
+        .calculator {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            animation: pop 0.6s ease-in-out;
+            text-align: center;
+            width: 320px;
+            background-image: url('/mnt/data/without%20backround.png');
+            background-size: cover;
+            background-position: center;
+        }
+        .calculator-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: black;
+            font-weight: bold;
+        }
+        .company-name {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #61dafb;
+            font-weight: bold;
+        }
+        .web-calculator {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: black;
+            font-weight: bold;
+        }
+        .display {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-align: right;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            color: black;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: calc(100% - 40px);
+            margin: 0 auto;
+            position: relative;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            font-size: 20px;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background-color: #61dafb;
+            color: black;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        button:hover {
+            background-color: #21a1f1;
+            transform: scale(1.05);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: red;
+        }
+        .off-button {
+            grid-column: span 2;
+            background-color: #ff4757;
+        }
+        .on-button {
+            grid-column: span 2;
+            background-color: #2ed573;
+        }
+        .facebook-button {
+            margin-top: 20px;
+            font-size: 18px;
+            padding: 10px;
+            background-color: #3b5998;
+            color: white;
+            text-align: center;
+            border-radius: 10px;
+            width: 100%;
+            text-decoration: none;
+            display: inline-block;
+        }
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator">
+    <div class="calculator-title">Calculator</div>
+    <div class="company-name">Higher-IT Institute</div>
+    <div class="web-calculator">Web Calculator</div>
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+        <button onclick="handleClick('clear')" style="background-color: #ff4757;">C</button>
+        <button onclick="handleClick('operator', '/')">/</button>
+        <button onclick="handleClick('operator', '*')">*</button>
+        <button onclick="handleClick('delete')">DEL</button>
+        <button onclick="handleClick('number', '7')">7</button>
+        <button onclick="handleClick('number', '8')">8</button>
+        <button onclick="handleClick('number', '9')">9</button>
+        <button onclick="handleClick('operator', '-')">-</button>
+        <button onclick="handleClick('number', '4')">4</button>
+        <button onclick="handleClick('number', '5')">5</button>
+        <button onclick="handleClick('number', '6')">6</button>
+        <button onclick="handleClick('operator', '+')">+</button>
+        <button onclick="handleClick('number', '1')">1</button>
+        <button onclick="handleClick('number', '2')">2</button>
+        <button onclick="handleClick('number', '3')">3</button>
+        <button onclick="handleClick('calculate')" style="background-color: #2ed573;">=</button>
+        <button onclick="handleClick('number', '0')" style="grid-column: span 2;">0</button>
+        <button onclick="handleClick('number', '.')">.</button>
+        <button class="off-button" onclick="toggleCalculator(false)">OFF</button>
+        <button class="on-button" onclick="toggleCalculator(true)">ON</button>
+    </div>
+    <div class="footer">
+        Made by Md. Mizanur Rahman
+    </div>
+</div>
+
+<!-- Facebook button below the calculator -->
+<a href="https://www.facebook.com/higheritinstitute" class="facebook-button" target="_blank">
+    Join Facebook Page
+</a>
+
+<audio id="beep" src="beep.mp3" preload="auto"></audio>
+<audio id="click" src="click.mp3" preload="auto"></audio>
+
+<script>
+    let displayElement = document.getElementById('display');
+    let calculatorOn = true;
+    let displayValue = '0';
+    let operator = null;
+    let firstValue = null;
+    let awaitingNextValue = false;
+
+    // Function to update display
+    function updateDisplay() {
+        displayElement.textContent = displayValue;
+    }
+
+    // Clear function
+    function handleClear() {
+        displayValue = '0';
+        operator = null;
+        firstValue = null;
+        awaitingNextValue = false;
+        updateDisplay();
+    }
+
+    // Delete function (for DEL button)
+    function handleDelete() {
+        displayValue = displayValue.slice(0, -1) || '0';
+        updateDisplay();
+    }
+
+    // Handle number and dot input
+    function handleNumber(number) {
+        if (awaitingNextValue) {
+            displayValue = number;
+            awaitingNextValue = false;
+        } else {
+            displayValue = displayValue === '0' ? number : displayValue + number;
+        }
+        updateDisplay();
+    }
+
+    // Handle operator input
+    function handleOperator(nextOperator) {
+        const value = parseFloat(displayValue);
+
+        if (operator && awaitingNextValue) {
+            operator = nextOperator;
+            return;
+        }
+
+        if (firstValue === null) {
+            firstValue = value;
+        } else if (operator) {
+            const result = performCalculation(operator, firstValue, value);
+            displayValue = String(result);
+            firstValue = result;
+        }
+
+        awaitingNextValue = true;
+        operator = nextOperator;
+        updateDisplay();
+    }
+
+    // Perform calculation
+    function performCalculation(operator, firstValue, secondValue) {
+        switch (operator) {
+            case '+':
+                return firstValue + secondValue;
+            case '-':
+                return firstValue - secondValue;
+            case '*':
+                return firstValue * secondValue;
+            case '/':
+                return firstValue / secondValue;
+            default:
+                return secondValue;
+        }
+    }
+
+    // Handle calculation on '=' button
+    function handleCalculate() {
+        if (operator && !awaitingNextValue) {
+            handleOperator(operator);
+            operator = null;
+        }
+    }
+
+    // Toggle calculator ON/OFF
+    function toggleCalculator(on) {
+        calculatorOn = on;
+        displayValue = on ? '0' : 'OFF';
+        updateDisplay();
+    }
+
+    // Handle button clicks
+    function handleClick(type, value = null) {
+        if (!calculatorOn && type !== 'clear' && type !== 'on') return;
+        
+        switch (type) {
+            case 'clear':
+                handleClear();
+                break;
+            case 'delete':
+                handleDelete();
+                break;
+            case 'number':
+                handleNumber(value);
+                break;
+            case 'operator':
+                handleOperator(value);
+                break;
+            case 'calculate':
+                handleCalculate();
+                break;
+            case 'off':
+                toggleCalculator(false);
+                break;
+            case 'on':
+                toggleCalculator(true);
+                break;
+        }
+    }
+
+    // Add keyboard functionality
+    document.addEventListener('keydown', (event) => {
+        const key = event.key;
+        
+        if (!calculatorOn) return;
+        
+        if (!isNaN(key)) {
+            handleNumber(key);
+        } else if (['+', '-', '*', '/'].includes(key)) {
+            handleOperator(key);
+        } else if (key === 'Enter') {
+            handleCalculate();
+        } else if (key === 'Backspace') {
+            handleDelete();
+        } else if (key === 'Escape') {
+            handleClear();
+        } else if (key === '.') {
+            handleNumber('.');
+        }
+    });
+</script>
+</body>
+</html>
